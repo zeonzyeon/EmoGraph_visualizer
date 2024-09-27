@@ -24,15 +24,7 @@ public class AudioAdapter extends RecyclerView.Adapter {
 
     // 리스너 객체 참조를 저장하는 변수
     private OnIconClickListener listener = null;
-    /**
-     * 커스텀 이벤트 리스너
-     * 클릭이벤트를 Adapter에서 구현하기에 제약이 있기 때문에 Activity 에서 실행시키기 위해 커스텀 이벤트 리스너를 생성함.
-     * 절차
-     * 1.커스텀 리스너 인터페이스 정의
-     * 2. 리스너 객체를 전달하는 메서드와 전달된 객체를 저장할변수 추가
-     * 3. 아이템 클릭 이벤트 핸들러 메스드에서 리스너 객체 메서드 호출
-     * 4. 액티비티에서 커스텀 리스너 객체 생성 및 전달(MainActivity.java 에서 audioAdapter.setOnItemClickListener() )
-     */
+
     // 1.커스텀 리스너 인터페이스 정의
     public interface OnIconClickListener {
         void onItemClick(View view, int position);
