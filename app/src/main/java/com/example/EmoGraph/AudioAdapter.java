@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class AudioAdapter extends RecyclerView.Adapter {
-
     //리사이클러뷰에 넣을 데이터 리스트
     ArrayList<Uri> dataModels;
     Context context;
@@ -47,7 +46,6 @@ public class AudioAdapter extends RecyclerView.Adapter {
         return dataModels.size();
     }
 
-
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -59,7 +57,6 @@ public class AudioAdapter extends RecyclerView.Adapter {
         return viewHolder;
     }
 
-
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         MyViewHolder myViewHolder = (MyViewHolder)holder;
@@ -69,7 +66,6 @@ public class AudioAdapter extends RecyclerView.Adapter {
 
         myViewHolder.audioTitle.setText(file.getName());
     }
-
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         ImageButton audioBtn;

@@ -27,7 +27,6 @@ import java.util.Date;
 import androidx.core.content.ContextCompat; // ContextCompat 임포트
 
 public class MainActivity extends AppCompatActivity {
-
     /**xml 변수*/
     ImageButton audioRecordImageBtn;
     TextView audioRecordText;
@@ -56,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         init();
     }
 
@@ -110,14 +108,9 @@ public class MainActivity extends AppCompatActivity {
         audioAdapter.setOnItemClickListener(new AudioAdapter.OnIconClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-
                 String uriName = String.valueOf(audioList.get(position));
 
-                /*음성 녹화 파일에 대한 접근 변수 생성;
-                     (ImageView)를 붙여줘서 View 객체를 형변환 시켜줌.
-                     전역변수로 한 이유는
-                    * */
-
+                // 음성 녹화 파일에 대한 접근 변수 생성;
                 File file = new File(uriName);
 
                 if(isPlaying){
@@ -173,8 +166,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //녹음 시작
-        mediaRecorder.start();
+        mediaRecorder.start(); //녹음 시작
     }
 
     // 녹음 종료
@@ -189,15 +181,13 @@ public class MainActivity extends AppCompatActivity {
         //      - File Path를 알면 File을  인스턴스를 만들어 사용할 수 있기 때문
         audioUri = Uri.parse(audioFileName);
 
-
         // 데이터 ArrayList에 담기
         audioList.add(audioUri);
 
-
         // 데이터 갱신
         audioAdapter.notifyDataSetChanged();
-
     }
+
     private String generateUniqueFileName(String dirPath, String baseName, String extension) {
         int fileIndex = 1;
         String newFileName = baseName + extension;
@@ -243,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
                 stopAudio();
             }
         });
-
     }
 
     // 녹음 파일 중지
@@ -252,5 +241,4 @@ public class MainActivity extends AppCompatActivity {
         isPlaying = false;
         mediaPlayer.stop();
     }
-
 }
