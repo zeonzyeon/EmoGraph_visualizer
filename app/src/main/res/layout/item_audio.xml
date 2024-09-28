@@ -13,12 +13,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="16dp"
+        android:background="@android:color/transparent"
         android:src="@drawable/audio_play" />
 
     <TextView
         android:id="@+id/audioTitle_itemAudio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
         android:textSize="20sp"
         />
 
