@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#B6763989"
+    android:background="@drawable/gradient_background"
     android:padding="16dp">
 
     <Button
@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="216dp"
         android:fontFamily="serif-monospace"
-        android:text="혼잣말 녹음"
+        android:text="혼잣말 녹음하기"
         android:translationX="220dp"
         android:translationY="160dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -26,25 +26,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="serif-monospace"
-        android:text="오늘의 감정 상태 기록"
+        android:text="오늘의 감정 상태 기록하기"
         android:translationX="-50dp"
         android:translationY="40dp"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_record"
-        tools:layout_editor_absoluteX="88dp" />
+        app:layout_constraintHorizontal_bias="0.658"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_record" />
 
     <Button
         android:id="@+id/btn_ai_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:fontFamily="serif-monospace"
         android:text="응원 메시지 받기"
         android:translationX="40dp"
         android:translationY="180dp"
-        app:layout_constraintTop_toBottomOf="@id/btn_write_emotion"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.429"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/btn_write_emotion" />
 
     <Button
         android:id="@+id/btn_emograph"
@@ -52,23 +54,11 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="96dp"
         android:fontFamily="serif-monospace"
-        android:text="Today's EmoGraph"
+        android:text="나의 EmoGraph 보기"
         android:textAlignment="textEnd"
         android:translationX="0dp"
         android:translationY="-140dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btn_ai_message" />
-
-    <Button
-        android:id="@+id/btn_archive"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="serif-monospace"
-        android:text="마음 모으기"
-        android:translationX="-70dp"
-        android:translationY="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_emograph" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

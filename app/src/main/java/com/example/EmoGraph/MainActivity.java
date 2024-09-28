@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -27,11 +28,9 @@ import java.util.Date;
 import androidx.core.content.ContextCompat; // ContextCompat 임포트
 
 public class MainActivity extends AppCompatActivity {
-    /**xml 변수*/
     ImageButton audioRecordImageBtn;
     TextView audioRecordText;
 
-    /**오디오 파일 관련 변수*/
     // 오디오 권한
     private String recordPermission = Manifest.permission.RECORD_AUDIO;
     private int PERMISSION_CODE = 21;
@@ -47,7 +46,9 @@ public class MainActivity extends AppCompatActivity {
     private Boolean isPlaying = false;
     ImageView playIcon;
 
-    /** 리사이클러뷰 */
+    /**
+     * 리사이클러뷰
+     */
     private AudioAdapter audioAdapter;
     private ArrayList<Uri> audioList;
 
@@ -55,7 +56,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        init();
+
+        Button btnRecord = findViewById(R.id.btn_record);  // 녹음 버튼 찾기
+        btnRecord.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // RecordActivity로 이동하는 Intent 생성
+                Intent intent = new Intent(MainActivity.this, RecordActivity.class);
+                startActivity(intent);  // 녹음 화면으로 이동
+            }
+        });
     }
 
     // xml 변수 초기화
@@ -64,31 +74,25 @@ public class MainActivity extends AppCompatActivity {
         audioRecordImageBtn = findViewById(R.id.audioRecordImageBtn);
         audioRecordText = findViewById(R.id.audioRecordText);
 
-        audioRecordImageBtn.setImageDrawable(getResources().getDrawable(R.drawable.start_recording, null)); // 녹음 상태 아이콘 변경
+        // 녹음 상태 아이콘 변경
+        audioRecordImageBtn.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.start_recording));
 
         audioRecordImageBtn.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(isRecording) {
-                    // 현재 녹음 중 O
-                    // 녹음 상태에 따른 변수 아이콘 & 텍스트 변경
-                    isRecording = false; // 녹음 상태 값
-                    audioRecordImageBtn.setImageDrawable(getResources().getDrawable(R.drawable.start_recording, null)); // 녹음 상태 아이콘 변경
-                    audioRecordText.setText("녹음 시작"); // 녹음 상태 텍스트 변경
+                if (isRecording) {
+                    // 녹음 중일 때 녹음 중지 처리
                     stopRecording();
-                    // 녹화 이미지 버튼 변경 및 리코딩 상태 변수값 변경
+                    isRecording = false; // 녹음 상태 변경
+                    audioRecordImageBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.start_recording)); // 버튼 이미지를 녹음 시작 이미지로 변경
+                    audioRecordText.setText("녹음 시작"); // 텍스트 변경
                 } else {
-                    // 현재 녹음 중이 아닌 상태
-                    /*절차
-                     *       1. Audio 권한 체크
-                     *       2. 처음으로 녹음 실행한건지 여부 확인
-                     * */
-                    if(checkAudioPermission()) {
-                        // 녹음 상태에 따른 변수 아이콘 & 텍스트 변경
-                        isRecording = true; // 녹음 상태 값
-                        audioRecordImageBtn.setImageDrawable(getResources().getDrawable(R.drawable.recording_red, null)); // 녹음 상태 아이콘 변경
-                        audioRecordText.setText("녹음 중"); // 녹음 상태 텍스트 변경
+                    // 녹음 중이 아닐 때 녹음 시작 처리
+                    if (checkAudioPermission()) { // 권한이 있는지 확인
                         startRecording();
+                        isRecording = true; // 녹음 상태 변경
+                        audioRecordImageBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.recording_red)); // 버튼 이미지를 녹음 중 이미지로 변경
+                        audioRecordText.setText("녹음 중"); // 텍스트 변경
                     }
                 }
             }
@@ -113,9 +117,9 @@ public class MainActivity extends AppCompatActivity {
                 // 음성 녹화 파일에 대한 접근 변수 생성;
                 File file = new File(uriName);
 
-                if(isPlaying){
+                if (isPlaying) {
                     // 음성 녹화 파일이 여러개를 클릭했을 때 재생중인 파일의 Icon을 비활성화(비 재생중)으로 바꾸기 위함.
-                    if(playIcon == (ImageView)view){
+                    if (playIcon == (ImageView) view) {
                         // 같은 파일을 클릭했을 경우
                         stopAudio();
                     } else {
@@ -124,12 +128,12 @@ public class MainActivity extends AppCompatActivity {
                         stopAudio();
 
                         // 새로 파일 재생하기
-                        playIcon = (ImageView)view;
+                        playIcon = (ImageView) view;
                         playIcon.setImageDrawable(ContextCompat.getDrawable(MainActivity.this, R.drawable.hear_recording));
                         playAudio(file);
                     }
                 } else {
-                    playIcon = (ImageView)view;
+                    playIcon = (ImageView) view;
                     playAudio(file);
                 }
             }
@@ -153,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         // 파일 이름 변수를 현재 날짜가 들어가도록 초기화. 그 이유는 중복된 이름으로 기존에 있던 파일이 덮어 쓰여지는 것을 방지하고자 함.
         String timeStamp = new SimpleDateFormat("yyyyMMdd").format(new Date());
         /*audioFileName = recordPath + "/" +"RecordExample_" + timeStamp + "_"+"audio.mp4";*/
-        audioFileName = generateUniqueFileName(recordPath,   timeStamp + "_오늘의 기분", ".mp4");
+        audioFileName = generateUniqueFileName(recordPath, timeStamp + "_오늘의 기분", ".3gp");
         //Media Recorder 생성 및 설정
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -162,16 +166,17 @@ public class MainActivity extends AppCompatActivity {
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         try {
-            mediaRecorder.prepare();
+            mediaRecorder.prepare(); // 녹음기 준비
+            mediaRecorder.start(); // 녹음 시작
+            Log.d("MainActivity", "녹음 시작됨: " + audioFileName);
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e("MainActivity", "녹음 준비 중 오류 발생: " + e.getMessage());
         }
-        mediaRecorder.start(); //녹음 시작
     }
 
     // 녹음 종료
     private void stopRecording() {
-        // 녹음 종료 종료
         mediaRecorder.stop();
         mediaRecorder.release();
         mediaRecorder = null;
@@ -214,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        playIcon.setImageDrawable(getResources().getDrawable(R.drawable.hear_recording, null));
+        playIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.hear_recording));
         isPlaying = true;
 
         ImageButton playIcon = findViewById(R.id.playBtn_itemAudio); // play_icon은 XML 레이아웃에 정의된 ID입니다.
@@ -237,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
 
     // 녹음 파일 중지
     private void stopAudio() {
-        playIcon.setImageDrawable(getResources().getDrawable(R.drawable.audio_play, null));
+        playIcon.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.audio_play));
         isPlaying = false;
         mediaPlayer.stop();
     }
