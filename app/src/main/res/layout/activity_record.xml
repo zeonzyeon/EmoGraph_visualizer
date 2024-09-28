@@ -14,9 +14,10 @@
         android:layout_height="40dp"
         android:layout_margin="16dp"
         android:background="@android:color/transparent"
+        android:elevation="10dp"
         android:src="@drawable/arrow_back"
-        android:translationX="300dp"
-        android:translationY="10dp"
+        android:translationX="0dp"
+        android:translationY="600dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -36,6 +37,7 @@
         android:layout_width="0dp"
         android:layout_height="150dp"
         android:layout_marginBottom="20dp"
+        android:background="#08084B"
         android:gravity="center"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -50,7 +52,8 @@
             android:background="@android:color/transparent"
             android:padding="17dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/start_recording" />
+            android:src="@drawable/start_recording"
+            android:translationY="-10dp" />
         <!--android:contentDescription="@string/record_button_description" />-->
 
         <TextView
@@ -59,7 +62,8 @@
             android:layout_height="wrap_content"
             android:text="녹음 시작"
             android:textColor="@android:color/white"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:translationY="-20dp" />
 
     </LinearLayout>
 

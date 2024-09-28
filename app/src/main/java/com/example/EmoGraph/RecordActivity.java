@@ -107,8 +107,11 @@ public class RecordActivity extends AppCompatActivity {
     // 녹음 시작
     private void startRecording() {
         String recordPath = getExternalFilesDir("/").getAbsolutePath();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd").format(new Date());
         audioFileName = generateUniqueFileName(recordPath, timeStamp, ".3gp");
+
+        // 파일 이름 생성 및 확장자
+        audioFileName = generateUniqueFileName(recordPath, timeStamp + "_오늘의 기분", ".3gp");
 
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
