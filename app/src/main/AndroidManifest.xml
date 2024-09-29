@@ -31,6 +31,25 @@
             android:name=".RecordActivity"
             android:label="혼잣말 녹음"
             android:exported="true" />
+
+        <!-- WriteEmotionActivity 설정 -->
+        <activity
+            android:name=".WriteEmotionActivity"
+            android:label="감정 상태 기록"
+            android:exported="true" />
+
+        <!-- EmoGraphActivity 설정 -->
+        <activity
+            android:name=".EmoGraphActivity"
+            android:label="나의 EmoGraph"
+            android:exported="true" />
+
+        <!-- AiMessageActivity 설정 -->
+        <activity
+            android:name=".AiMessageActivity"
+            android:label="응원 메시지"
+            android:exported="true" />
+
     </application>
 
 </manifest>
