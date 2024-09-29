@@ -15,7 +15,7 @@
       </SelectionState>
       <SelectionState runConfigName="MainActivity">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-09-29T07:47:25.519692500Z">
+        <DropdownSelection timestamp="2024-09-29T14:02:46.258409400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\hyune\.android\avd\Pixel_3_API_33.avd" />

@@ -47,7 +47,7 @@
         <!-- AiMessageActivity 설정 -->
         <activity
             android:name=".AiMessageActivity"
-            android:label="OO의 응원 메시지"
+            android:label="응원 메시지"
             android:exported="true" />
 
     </application>
