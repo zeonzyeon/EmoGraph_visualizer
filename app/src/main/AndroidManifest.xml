@@ -35,7 +35,7 @@
         <!-- WriteEmotionActivity 설정 -->
         <activity
             android:name=".WriteEmotionActivity"
-            android:label="감정 상태 기록"
+            android:label="나의 감정 저장소"
             android:exported="true" />
 
         <!-- EmoGraphActivity 설정 -->
@@ -47,7 +47,7 @@
         <!-- AiMessageActivity 설정 -->
         <activity
             android:name=".AiMessageActivity"
-            android:label="응원 메시지"
+            android:label="OO의 응원 메시지"
             android:exported="true" />
 
     </application>

@@ -28,14 +28,21 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
 
-    <TextView
-        android:id="@+id/textView_record"
+    <ScrollView
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="저장된 감정 상태가 여기에 표시됩니다."
-        android:gravity="center"
+        android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@id/btn_save_emotion"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:padding="16dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/textView_record"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="저장된 감정 상태가 여기에 표시됩니다."
+            android:gravity="center"
+            android:padding="16dp"/>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

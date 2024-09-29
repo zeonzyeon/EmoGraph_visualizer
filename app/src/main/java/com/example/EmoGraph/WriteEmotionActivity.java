@@ -42,15 +42,18 @@ public class WriteEmotionActivity extends AppCompatActivity {
                 String currentDateTime = getCurrentDateTime();
 
                 if (!emotion.isEmpty()) {
-                    String record = "Date: " + currentDateTime + "\nEmotion: " + emotion;
+                    // 새로운 기록을 이전 기록에 추가
+                    String newRecord = "Date: " + currentDateTime + "\nEmotion: " + emotion + "\n\n";
+                    String allRecords = sharedPreferences.getString("records", "");  // 모든 기록을 가져옴
+                    allRecords = newRecord + allRecords;  // 새로운 기록을 기존 기록 위에 추가
 
                     // 기록을 SharedPreferences에 저장
                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("record", record);
+                    editor.putString("records", allRecords);  // 모든 기록 저장
                     editor.apply();
 
-                    // 화면에 기록 표시
-                    displayRecord.setText(record);
+                    // 화면에 모든 기록 표시
+                    displayRecord.setText(allRecords);
 
                     // 입력 필드 초기화
                     emotionInput.setText("");
