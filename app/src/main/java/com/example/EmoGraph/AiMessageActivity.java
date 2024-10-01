@@ -52,16 +52,22 @@ public class AiMessageActivity extends AppCompatActivity {
             public void onResponse(Call<AIResponse> call, Response<AIResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     // API 응답 처리
-                    String aiMessage = response.body().getChoices().get(0).getMessage();
+                    Log.d("API Response", "응답 내용: " + response.body().toString());  // 응답 내용을 로그로 출력
+                    String aiMessage = response.body().getChoices().get(0).getText();  // getText()로 수정
                     aiMessageTextView.setText(aiMessage);
+                    Log.d("API Response", "응답 메시지: " + aiMessage);  // 성공 메시지 로그 출력
                 } else {
+                    // 실패한 응답 메시지와 코드를 출력
+                    Log.e("API Response", "응답 실패: " + response.message() + ", 코드: " + response.code());
                     Toast.makeText(AiMessageActivity.this, "AI 응답을 처리할 수 없습니다.", Toast.LENGTH_SHORT).show();
                 }
             }
 
+
+
             @Override
             public void onFailure(Call<AIResponse> call, Throwable t) {
-                Log.e("AiMessageActivity", "API 호출 실패: " + t.getMessage());
+                Log.e("API Response", "API 호출 실패: " + t.getMessage());
                 Toast.makeText(AiMessageActivity.this, "AI 메시지를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show();
             }
         });

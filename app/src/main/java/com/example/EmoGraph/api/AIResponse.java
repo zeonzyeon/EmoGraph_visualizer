@@ -17,15 +17,15 @@ public class AIResponse {
 
     // Choice 클래스 정의
     public static class Choice {
-        private Message message;
+        private String text;  // OpenAI 응답의 'text' 필드
 
-        // message를 반환하는 메서드
-        public String getMessage() {
-            return message.getContent();  // message 객체의 content를 반환
+        // text를 반환하는 메서드
+        public String getText() {
+            return text;  // text 필드를 반환
         }
 
-        public void setMessage(Message message) {
-            this.message = message;
+        public void setText(String text) {
+            this.text = text;
         }
     }
 }
