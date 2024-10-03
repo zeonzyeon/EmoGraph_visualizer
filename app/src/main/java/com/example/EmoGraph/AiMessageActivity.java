@@ -18,6 +18,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.os.Handler;
+import android.os.Looper;
+
 public class AiMessageActivity extends AppCompatActivity {
 
     private TextView aiMessageTextView;
@@ -26,7 +29,7 @@ public class AiMessageActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ai_message);  // XML 파일에서 activity_ai_message로 설정하세요
+        setContentView(R.layout.activity_ai_message);  // XML 파일
 
         aiMessageTextView = findViewById(R.id.aiMessageTextView);  // XML에서 정의한 텍스트뷰 ID에 맞춰 수정
         fetchMessageButton = findViewById(R.id.fetchMessageButton);  // AI 메시지 가져오는 버튼 ID
@@ -34,16 +37,16 @@ public class AiMessageActivity extends AppCompatActivity {
         fetchMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fetchAIMessage();
+                fetchAIMessage(0);
             }
         });
     }
 
-    private void fetchAIMessage() {
+    private void fetchAIMessage(int retryCount) {
         OpenAIApiService apiService = RetrofitClient.getRetrofitInstance().create(OpenAIApiService.class);
 
         // OpenAI에 요청할 메시지를 설정
-        AIRequest request = new AIRequest("text-davinci-003", "오늘 나에게 응원의 메시지를 보내줘.", 0.7, 50);
+        AIRequest request = new AIRequest("gpt-3.5-turbo", "오늘 나에게 응원의 메시지를 보내줘.", 0.7, 50);
 
         // API 호출
         Call<AIResponse> call = apiService.getAIMessage(request);
@@ -51,19 +54,29 @@ public class AiMessageActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<AIResponse> call, Response<AIResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    // API 응답 처리
-                    Log.d("API Response", "응답 내용: " + response.body().toString());  // 응답 내용을 로그로 출력
-                    String aiMessage = response.body().getChoices().get(0).getText();  // getText()로 수정
+                    // 성공적으로 응답을 받았을 경우
+                    String aiMessage = response.body().getChoices().get(0).getMessage().getContent();
                     aiMessageTextView.setText(aiMessage);
-                    Log.d("API Response", "응답 메시지: " + aiMessage);  // 성공 메시지 로그 출력
+                } else if (response.code() == 429) {
+                    // 속도 제한에 걸린 경우 비동기로 1초 대기 후 다시 시도
+                    if (retryCount < 5) {  // 최대 5번까지 재시도
+                        int backoffTime = (int) Math.pow(2, retryCount);  // 백오프 시간 (2의 제곱으로 점점 늘어남)
+                        Log.e("API Response", "429 Too Many Requests: " + backoffTime + "초 후 다시 시도합니다.");
+
+                        // Handler를 이용하여 비동기적으로 대기
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            fetchAIMessage(retryCount + 1);  // 재시도
+                        }, backoffTime * 1000);  // 백오프 시간만큼 대기
+                    } else {
+                        // 최대 재시도 횟수를 초과했을 경우
+                        Toast.makeText(AiMessageActivity.this, "요청 실패: 최대 재시도 횟수를 초과했습니다.", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    // 실패한 응답 메시지와 코드를 출력
+                    // 실패한 응답 처리
                     Log.e("API Response", "응답 실패: " + response.message() + ", 코드: " + response.code());
                     Toast.makeText(AiMessageActivity.this, "AI 응답을 처리할 수 없습니다.", Toast.LENGTH_SHORT).show();
                 }
             }
-
-
 
             @Override
             public void onFailure(Call<AIResponse> call, Throwable t) {

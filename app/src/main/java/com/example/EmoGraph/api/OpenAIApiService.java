@@ -9,8 +9,8 @@ public interface OpenAIApiService {
 
     @Headers({
             "Content-Type: application/json",
-            "Authorization: Bearer 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"  // 여기에 API 키를 넣으세요
+            "Authorization: Bearer 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"  // 여기에 API 키를 넣으세요
     })
-    @POST("v1/completions")
+    @POST("v1/chat/completions")
     Call<AIResponse> getAIMessage(@Body AIRequest request);
 }
