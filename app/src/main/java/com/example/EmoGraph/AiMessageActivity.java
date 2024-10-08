@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.EmoGraph.api.AIRequest;
 import com.example.EmoGraph.api.AIResponse;
+import com.example.EmoGraph.api.Message;
 import com.example.EmoGraph.api.OpenAIApiService;
 import com.example.EmoGraph.api.RetrofitClient;
 
@@ -20,6 +21,13 @@ import retrofit2.Response;
 
 import android.os.Handler;
 import android.os.Looper;
+
+import okhttp3.OkHttpClient;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class AiMessageActivity extends AppCompatActivity {
 
@@ -43,10 +51,15 @@ public class AiMessageActivity extends AppCompatActivity {
     }
 
     private void fetchAIMessage(int retryCount) {
-        OpenAIApiService apiService = RetrofitClient.getRetrofitInstance().create(OpenAIApiService.class);
+        OpenAIApiService apiService = getRetrofitInstance().create(OpenAIApiService.class);
 
         // OpenAI에 요청할 메시지를 설정
-        AIRequest request = new AIRequest("gpt-3.5-turbo", "오늘 나에게 응원의 메시지를 보내줘.", 0.7, 50);
+        AIRequest request = new AIRequest(
+                "gpt-3.5-turbo",
+                Arrays.asList(new Message("user", "오늘 나에게 응원의 메시지를 보내줘.")),  // messages 파라미터 추가
+                0.7,  // temperature
+                100   // max_tokens
+        );
 
         // API 호출
         Call<AIResponse> call = apiService.getAIMessage(request);
@@ -72,8 +85,12 @@ public class AiMessageActivity extends AppCompatActivity {
                         Toast.makeText(AiMessageActivity.this, "요청 실패: 최대 재시도 횟수를 초과했습니다.", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    // 실패한 응답 처리
-                    Log.e("API Response", "응답 실패: " + response.message() + ", 코드: " + response.code());
+                    try {
+                        // 실패한 응답 처리 및 상세 오류 본문 출력
+                        Log.e("API Response", "응답 실패: " + response.message() + ", 코드: " + response.code() + ", 오류 본문: " + response.errorBody().string());
+                    } catch (Exception e) {
+                        Log.e("API Response", "오류 본문 파싱 중 예외 발생: " + e.getMessage());
+                    }
                     Toast.makeText(AiMessageActivity.this, "AI 응답을 처리할 수 없습니다.", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -84,5 +101,18 @@ public class AiMessageActivity extends AppCompatActivity {
                 Toast.makeText(AiMessageActivity.this, "AI 메시지를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private Retrofit getRetrofitInstance() {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)  // 타임아웃 설정
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build();
+
+        return new Retrofit.Builder()
+                .baseUrl("https://api.openai.com/")
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
     }
 }

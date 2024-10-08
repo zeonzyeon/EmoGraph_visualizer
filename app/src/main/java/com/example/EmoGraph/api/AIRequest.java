@@ -4,19 +4,17 @@ import java.util.List;
 
 public class AIRequest {
     private String model;
-    private String prompt;
-    private double temperature;  // 기존에는 int였지만 double로 변경
-    private int maxTokens;
+    private List<Message> messages;
+    private double temperature;
+    private int max_tokens;
 
-    // 생성자
-    public AIRequest(String model, String prompt, double temperature, int maxTokens) {
+    public AIRequest(String model, List<Message> messages, double temperature, int max_tokens) {
         this.model = model;
-        this.prompt = prompt;
-        this.temperature = temperature;  // double로 변경
-        this.maxTokens = maxTokens;
+        this.messages = messages;
+        this.temperature = temperature;
+        this.max_tokens = max_tokens;
     }
 
-    // Getters and Setters (필요시)
     public String getModel() {
         return model;
     }
@@ -25,12 +23,12 @@ public class AIRequest {
         this.model = model;
     }
 
-    public String getPrompt() {
-        return prompt;
+    public List<Message> getMessages() {
+        return messages;
     }
 
-    public void setPrompt(String prompt) {
-        this.prompt = prompt;
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
     }
 
     public double getTemperature() {
@@ -42,10 +40,10 @@ public class AIRequest {
     }
 
     public int getMaxTokens() {
-        return maxTokens;
+        return max_tokens;
     }
 
-    public void setMaxTokens(int maxTokens) {
-        this.maxTokens = maxTokens;
+    public void setMaxTokens(int max_tokens) {
+        this.max_tokens = max_tokens;
     }
 }
