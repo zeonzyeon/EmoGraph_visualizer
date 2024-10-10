@@ -7,20 +7,6 @@
     android:background="@color/backgroundColor"
     tools:context=".MainActivity">
 
-    <!-- 뒤로 가기 버튼 -->
-    <ImageButton
-        android:id="@+id/backButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_margin="16dp"
-        android:background="@android:color/transparent"
-        android:elevation="10dp"
-        android:src="@drawable/arrow_back"
-        android:translationX="0dp"
-        android:translationY="600dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <!-- 녹음 내역들이 담길 리사이클러뷰 -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/audioRecyclerview"

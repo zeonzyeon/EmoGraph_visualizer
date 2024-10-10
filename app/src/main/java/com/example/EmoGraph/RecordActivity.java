@@ -93,15 +93,6 @@ public class RecordActivity extends AppCompatActivity {
                 }
             }
         });
-
-        // 뒤로 가기 버튼 설정
-        ImageButton backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
     }
 
     // 오디오 파일 권한 체크
