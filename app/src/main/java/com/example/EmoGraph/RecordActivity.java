@@ -20,7 +20,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
+import com.google.cloud.speech.v1.RecognitionAudio;
+import com.google.cloud.speech.v1.RecognitionConfig;
+import com.google.cloud.speech.v1.RecognizeResponse;
+import com.google.cloud.speech.v1.SpeechClient;
+import com.google.cloud.speech.v1.SpeechRecognitionAlternative;
+import com.google.cloud.speech.v1.SpeechRecognitionResult;
+import com.google.protobuf.ByteString;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
 
 public class RecordActivity extends AppCompatActivity {
     ImageButton audioRecordImageBtn;
@@ -108,26 +118,26 @@ public class RecordActivity extends AppCompatActivity {
     private void startRecording() {
         String recordPath = getExternalFilesDir("/").getAbsolutePath();
         String timeStamp = new SimpleDateFormat("yyyyMMdd").format(new Date());
-        audioFileName = generateUniqueFileName(recordPath, timeStamp, ".3gp");
 
-        // 파일 이름 생성 및 확장자
+        // 파일 이름 생성 및 확장자 설정 (.3gp)
         audioFileName = generateUniqueFileName(recordPath, timeStamp + "_오늘의 기분", ".3gp");
 
         mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        mediaRecorder.setOutputFile(audioFileName);
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);  // 마이크로부터 오디오 입력받음
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);  // 3GP 형식 설정
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);  // AMR_NB 인코더 설정
+        mediaRecorder.setOutputFile(audioFileName);  // 녹음 파일 저장 경로
 
         try {
-            mediaRecorder.prepare();
-            mediaRecorder.start();
+            mediaRecorder.prepare();  // 준비
+            mediaRecorder.start();  // 녹음 시작
             Log.d("RecordActivity", "녹음 시작됨: " + audioFileName);
         } catch (IOException e) {
             e.printStackTrace();
             Log.e("RecordActivity", "녹음 준비 중 오류 발생: " + e.getMessage());
         }
     }
+
 
     // 녹음 종료
     private void stopRecording() {
@@ -137,11 +147,16 @@ public class RecordActivity extends AppCompatActivity {
 
         // 녹음된 파일을 Uri로 변환하여 리스트에 추가
         audioUri = Uri.parse(audioFileName);
-        audioList.add(audioUri);  // 녹음된 파일을 리스트에 추가
+        audioList.add(audioUri);
 
         // 어댑터에 데이터가 변경되었음을 알림
         audioAdapter.notifyDataSetChanged();
         Log.d("RecordActivity", "녹음된 파일 리스트 갱신: " + audioFileName);
+
+        // 녹음 파일을 텍스트로 변환하는 API 호출
+        convertAudioToText(audioFileName);  // 변환 처리
+
+        // 여기서 Google Speech-to-Text API 호출을 위한 로직을 추가
     }
 
     private String generateUniqueFileName(String dirPath, String baseName, String extension) {
@@ -156,5 +171,43 @@ public class RecordActivity extends AppCompatActivity {
         }
 
         return file.getAbsolutePath();
+    }
+
+    // Google Speech-to-Text API 호출을 위한 메서드
+    private void convertAudioToText(String audioFilePath) {
+        try (SpeechClient speechClient = SpeechClient.create()) {
+            // 오디오 파일을 바이트 스트림으로 변환
+            ByteString audioBytes = ByteString.readFrom(new FileInputStream(audioFilePath));
+
+            // Google Cloud Speech-to-Text 설정
+            RecognitionConfig config = RecognitionConfig.newBuilder()
+                    .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
+                    .setSampleRateHertz(16000)
+                    .setLanguageCode("ko-KR") // 한국어 설정
+                    .build();
+
+            RecognitionAudio audio = RecognitionAudio.newBuilder()
+                    .setContent(audioBytes)
+                    .build();
+
+            // API 호출 및 결과 처리
+            RecognizeResponse response = speechClient.recognize(config, audio);
+            List<SpeechRecognitionResult> results = response.getResultsList();
+
+            // 결과를 텍스트로 변환하여 화면에 표시
+            for (SpeechRecognitionResult result : results) {
+                SpeechRecognitionAlternative alternative = result.getAlternativesList().get(0);
+                String transcript = alternative.getTranscript();
+                Log.d("RecordActivity", "인식된 텍스트: " + transcript);
+
+                // 텍스트를 UI에 표시 (필요에 따라 수정)
+                runOnUiThread(() -> {
+                    audioRecordText.setText(transcript); // 녹음된 텍스트를 화면에 표시
+                });
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("RecordActivity", "오디오 파일 처리 중 오류 발생: " + e.getMessage());
+        }
     }
 }

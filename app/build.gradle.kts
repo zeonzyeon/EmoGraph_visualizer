@@ -50,6 +50,5 @@ dependencies {
     // Retrofit and Gson converter 라이브러리 추가
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-
-
+    implementation("com.google.cloud:google-cloud-speech:2.0.1")
 }
