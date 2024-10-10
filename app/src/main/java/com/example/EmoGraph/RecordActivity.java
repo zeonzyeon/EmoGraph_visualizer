@@ -52,7 +52,7 @@ public class RecordActivity extends AppCompatActivity {
 
     // 오디오 파일 재생 관련 변수
     private MediaPlayer mediaPlayer = null;
-    private Boolean isPlaying = false;
+    private boolean isPlaying = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +93,24 @@ public class RecordActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // RecyclerView의 각 아이템에 대한 클릭 리스너 설정
+        audioAdapter.setOnItemClickListener(new AudioAdapter.OnIconClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Uri uri = audioList.get(position);
+                ImageButton playBtn = view.findViewById(R.id.playBtn_itemAudio);
+                if (isPlaying) {
+                    stopPlaying();
+                    isPlaying = false;
+                    playBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.audio_play)); // 녹음 시작 이미지로 변경
+                } else {
+                    startPlaying(uri, playBtn);
+                    isPlaying = true;
+                    playBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.audio_pause)); // 재생 중 이미지로 변경
+                }
+            }
+        });
     }
 
     // 오디오 파일 권한 체크
@@ -129,7 +147,6 @@ public class RecordActivity extends AppCompatActivity {
         }
     }
 
-
     // 녹음 종료
     private void stopRecording() {
         mediaRecorder.stop();
@@ -143,11 +160,35 @@ public class RecordActivity extends AppCompatActivity {
         // 어댑터에 데이터가 변경되었음을 알림
         audioAdapter.notifyDataSetChanged();
         Log.d("RecordActivity", "녹음된 파일 리스트 갱신: " + audioFileName);
+    }
 
-        // 녹음 파일을 텍스트로 변환하는 API 호출
-        convertAudioToText(audioFileName);  // 변환 처리
+    // 오디오 재생 시작
+    private void startPlaying(Uri uri, ImageButton playBtn) {
+        mediaPlayer = new MediaPlayer();
+        try {
+            mediaPlayer.setDataSource(this, uri);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+            Log.d("RecordActivity", "오디오 재생 시작: " + uri.getPath());
 
-        // 여기서 Google Speech-to-Text API 호출을 위한 로직을 추가
+            mediaPlayer.setOnCompletionListener(mp -> {
+                stopPlaying();
+                isPlaying = false;
+                playBtn.setImageDrawable(ContextCompat.getDrawable(playBtn.getContext(), R.drawable.audio_play)); // 재생 완료 후 이미지 변경
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("RecordActivity", "오디오 재생 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+    // 오디오 재생 중지
+    private void stopPlaying() {
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+            Log.d("RecordActivity", "오디오 재생 중지");
+        }
     }
 
     private String generateUniqueFileName(String dirPath, String baseName, String extension) {
@@ -162,43 +203,5 @@ public class RecordActivity extends AppCompatActivity {
         }
 
         return file.getAbsolutePath();
-    }
-
-    // Google Speech-to-Text API 호출을 위한 메서드
-    private void convertAudioToText(String audioFilePath) {
-        try (SpeechClient speechClient = SpeechClient.create()) {
-            // 오디오 파일을 바이트 스트림으로 변환
-            ByteString audioBytes = ByteString.readFrom(new FileInputStream(audioFilePath));
-
-            // Google Cloud Speech-to-Text 설정
-            RecognitionConfig config = RecognitionConfig.newBuilder()
-                    .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
-                    .setSampleRateHertz(16000)
-                    .setLanguageCode("ko-KR") // 한국어 설정
-                    .build();
-
-            RecognitionAudio audio = RecognitionAudio.newBuilder()
-                    .setContent(audioBytes)
-                    .build();
-
-            // API 호출 및 결과 처리
-            RecognizeResponse response = speechClient.recognize(config, audio);
-            List<SpeechRecognitionResult> results = response.getResultsList();
-
-            // 결과를 텍스트로 변환하여 화면에 표시
-            for (SpeechRecognitionResult result : results) {
-                SpeechRecognitionAlternative alternative = result.getAlternativesList().get(0);
-                String transcript = alternative.getTranscript();
-                Log.d("RecordActivity", "인식된 텍스트: " + transcript);
-
-                // 텍스트를 UI에 표시 (필요에 따라 수정)
-                runOnUiThread(() -> {
-                    audioRecordText.setText(transcript); // 녹음된 텍스트를 화면에 표시
-                });
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e("RecordActivity", "오디오 파일 처리 중 오류 발생: " + e.getMessage());
-        }
     }
 }
