@@ -7,6 +7,7 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -28,6 +29,8 @@ import com.google.cloud.speech.v1.SpeechClient;
 import com.google.cloud.speech.v1.SpeechRecognitionAlternative;
 import com.google.cloud.speech.v1.SpeechRecognitionResult;
 import com.google.protobuf.ByteString;
+import okhttp3.*;
+import org.json.JSONObject;
 
 import java.io.FileInputStream;
 import java.util.List;
@@ -64,7 +67,6 @@ public class RecordActivity extends AppCompatActivity {
         audioRecordImageBtn = findViewById(R.id.audioRecordImageBtn);
         audioRecordText = findViewById(R.id.audioRecordText);
 
-        // RecyclerView 설정
         RecyclerView audioRecyclerView = findViewById(R.id.audioRecyclerview);
         audioList = new ArrayList<>();
         audioAdapter = new AudioAdapter(this, audioList);
@@ -87,7 +89,7 @@ public class RecordActivity extends AppCompatActivity {
                 isRecording = false;
                 audioRecordImageBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.start_recording));
                 audioRecordText.setText("녹음 시작");
-                convertSpeechToText(audioFileName); // 녹음이 끝난 후 음성을 텍스트로 변환합니다.
+                convertSpeechToText(audioFileName); // 녹음이 끝난 후 음성을 텍스트로 변환
             } else {
                 if (checkAudioPermission()) {
                     startRecording();
@@ -129,8 +131,9 @@ public class RecordActivity extends AppCompatActivity {
 
     // 녹음 시작
     private void startRecording() {
+        // 녹음 파일 경로 설정
         String recordPath = getExternalFilesDir("/").getAbsolutePath();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(new Date());
 
         // 파일 이름 생성 및 확장자 설정 (.3gp)
         audioFileName = generateUniqueFileName(recordPath, timeStamp + "_오늘의 기분", ".3gp");
@@ -142,26 +145,40 @@ public class RecordActivity extends AppCompatActivity {
         mediaRecorder.setOutputFile(audioFileName);  // 녹음 파일 저장 경로
 
         try {
-            mediaRecorder.prepare();  // 준비
-            mediaRecorder.start();  // 녹음 시작
-            Log.d("RecordActivity", "녹음 시작됨: " + audioFileName);
+            // MediaRecorder 준비
+            mediaRecorder.prepare();
         } catch (IOException e) {
-            e.printStackTrace();
             Log.e("RecordActivity", "녹음 준비 중 오류 발생: " + e.getMessage());
+            mediaRecorder.release();  // 오류 발생 시 리소스를 해제
+            mediaRecorder = null;
+            return;  // 오류 발생 시 녹음 시작을 하지 않음
+        }
+
+        // 녹음 시작
+        try {
+            mediaRecorder.start();
+            Log.d("RecordActivity", "녹음 시작됨: " + audioFileName);
+        } catch (IllegalStateException e) {
+            Log.e("RecordActivity", "녹음 시작 중 오류 발생: " + e.getMessage());
+            mediaRecorder.release();  // 오류 발생 시 리소스를 해제
+            mediaRecorder = null;
         }
     }
 
+
     // 녹음 종료
     private void stopRecording() {
-        mediaRecorder.stop();
-        mediaRecorder.release();
-        mediaRecorder = null;
-
+        try {
+            mediaRecorder.stop();
+        } catch (RuntimeException e) {
+            Log.e("RecordActivity", "녹음 중지 오류: " + e.getMessage());
+        } finally {
+            mediaRecorder.release();
+            mediaRecorder = null;
+        }
         // 녹음된 파일을 Uri로 변환하여 리스트에 추가
-        audioUri = Uri.parse(audioFileName);
+        audioUri = Uri.fromFile(new File(audioFileName));
         audioList.add(audioUri);
-
-        // 어댑터에 데이터가 변경되었음을 알림
         audioAdapter.notifyDataSetChanged();
         Log.d("RecordActivity", "녹음된 파일 리스트 갱신: " + audioFileName);
     }
@@ -202,48 +219,79 @@ public class RecordActivity extends AppCompatActivity {
 
         while (file.exists()) {
             fileIndex++;
-            newFileName = baseName + fileIndex + extension;
+            newFileName = baseName + "_" + fileIndex + extension;
             file = new File(dirPath, newFileName);
         }
-
         return file.getAbsolutePath();
     }
 
     private void convertSpeechToText(String audioFilePath) {
         new Thread(() -> {
-            try (SpeechClient speechClient = SpeechClient.create()) {
-                FileInputStream fileInputStream = new FileInputStream(audioFilePath);
-                ByteString audioBytes = ByteString.readFrom(fileInputStream);
+            try {
+                // 오디오 파일을 바이트 배열로 읽기
+                File audioFile = new File(audioFilePath);
+                byte[] audioBytes = new byte[(int) audioFile.length()];
+                FileInputStream fis = new FileInputStream(audioFile);
+                fis.read(audioBytes);
+                fis.close();
 
-                RecognitionAudio audio = RecognitionAudio.newBuilder()
-                        .setContent(audioBytes)
+                // OkHttp 클라이언트를 사용하여 요청 생성
+                OkHttpClient client = new OkHttpClient();
+
+                // JSON 요청 본문 생성
+                JSONObject audioContent = new JSONObject();
+                audioContent.put("content", Base64.encodeToString(audioBytes, Base64.NO_WRAP));
+
+                // 오디오 형식과 맞춘 설정
+                JSONObject config = new JSONObject();
+                config.put("encoding", "AMR"); // 녹음된 파일이 AMR_NB 형식이므로 "AMR"로 수정
+                config.put("sampleRateHertz", 8000); // AMR_NB는 일반적으로 8000 Hz를 사용합니다
+                config.put("languageCode", "ko-KR");
+
+                JSONObject requestBodyJson = new JSONObject();
+                requestBodyJson.put("audio", audioContent);
+                requestBodyJson.put("config", config);
+
+                RequestBody body = RequestBody.create(requestBodyJson.toString(), MediaType.parse("application/json"));
+
+                // API 키를 포함한 요청 URL 생성
+                String apiKey = "AIzaSyC5owhMxdZnvPz-pTZL6fChTCXj7ld6OI0"; // 발급받은 API 키를 사용하세요.
+                String url = "https://speech.googleapis.com/v1/speech:recognize?key=" + apiKey;
+
+                Request request = new Request.Builder()
+                        .url(url)
+                        .post(body)
                         .build();
 
-                RecognitionConfig config = RecognitionConfig.newBuilder()
-                        .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
-                        .setSampleRateHertz(16000)
-                        .setLanguageCode("ko-KR")
-                        .build();
+                // 요청 보내기
+                Response response = client.newCall(request).execute();
 
-                RecognizeResponse response = speechClient.recognize(config, audio);
-                List<SpeechRecognitionResult> results = response.getResultsList();
+                if (response.isSuccessful()) {
+                    String responseString = response.body().string();
+                    Log.d("RecordActivity", "응답: " + responseString);
 
-                StringBuilder transcript = new StringBuilder();
-                for (SpeechRecognitionResult result : results) {
-                    SpeechRecognitionAlternative alternative = result.getAlternativesList().get(0);
-                    transcript.append(alternative.getTranscript()).append(" ");
+                    if (responseString.contains("results")) {
+                        JSONObject responseJson = new JSONObject(responseString);
+                        StringBuilder transcript = new StringBuilder();
+                        for (int i = 0; i < responseJson.getJSONArray("results").length(); i++) {
+                            JSONObject result = responseJson.getJSONArray("results").getJSONObject(i);
+                            transcript.append(result.getJSONArray("alternatives").getJSONObject(0).getString("transcript")).append(" ");
+                        }
+
+                        String finalTranscript = transcript.toString();
+                        runOnUiThread(() -> {
+                            audioRecordText.setText(finalTranscript);
+                            requestEmotionScore(finalTranscript);
+                        });
+                    } else {
+                        Log.e("RecordActivity", "응답에 results 필드가 없습니다: " + responseString);
+                    }
+                } else {
+                    Log.e("RecordActivity", "응답 실패: " + response.message());
                 }
-
-                String finalTranscript = transcript.toString();
-                Log.d("RecordActivity", "인식된 텍스트: " + finalTranscript);
-                runOnUiThread(() -> {
-                    audioRecordText.setText(finalTranscript); // 음성을 텍스트로 변환한 결과를 화면에 표시
-                    requestEmotionScore(finalTranscript); // 변환된 텍스트를 이용해 감정 점수를 요청
-                });
-
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                Log.e("RecordActivity", "음성 인식 중 오류 발생: " + e.getMessage());
+                Log.e("RecordActivity", "오류 발생: " + e.getMessage());
             }
         }).start();
     }
@@ -263,13 +311,10 @@ public class RecordActivity extends AppCompatActivity {
 
     private void saveEmotionScore(int score) {
         // SharedPreferences에 감정 점수를 저장하는 메서드
-        if (sharedPreferences != null) {
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putInt("emotionScore", score);
-            editor.apply();
-            Log.d("RecordActivity", "감정 점수가 저장되었습니다: " + score);
-        } else {
-            Log.e("RecordActivity", "SharedPreferences가 초기화되지 않았습니다.");
-        }
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("emotionScore", score);
+        editor.apply();
+        Log.d("RecordActivity", "감정 점수가 저장되었습니다: " + score);
     }
+
 }
