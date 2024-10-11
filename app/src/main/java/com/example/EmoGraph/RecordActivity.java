@@ -30,7 +30,6 @@ import com.google.cloud.speech.v1.SpeechRecognitionResult;
 import com.google.protobuf.ByteString;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.List;
 
 public class RecordActivity extends AppCompatActivity {
@@ -55,6 +54,8 @@ public class RecordActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer = null;
     private boolean isPlaying = false;
 
+    private SharedPreferences sharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,25 +74,26 @@ public class RecordActivity extends AppCompatActivity {
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         audioRecyclerView.setLayoutManager(layoutManager);
 
+        // SharedPreferences 초기화
+        sharedPreferences = getSharedPreferences("EmoGraphPrefs", MODE_PRIVATE);
+        if (sharedPreferences == null) {
+            Log.e("RecordActivity", "SharedPreferences 초기화 실패");
+        }
+
         // 녹음 버튼 클릭 리스너 설정
-        audioRecordImageBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (isRecording) {
-                    // 녹음 중일 때 녹음 중지 처리
-                    stopRecording();
-                    isRecording = false;
-                    audioRecordImageBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.start_recording)); // 녹음 시작 이미지
-                    audioRecordText.setText("녹음 시작");
-                    convertSpeechToText(audioFileName); // 녹음이 끝난 후 음성을 텍스트로 변환
-                } else {
-                    // 녹음 중이 아닐 때 녹음 시작 처리
-                    if (checkAudioPermission()) { // 권한이 있는지 확인
-                        startRecording();
-                        isRecording = true;
-                        audioRecordImageBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.recording_red)); // 녹음 중 이미지
-                        audioRecordText.setText("녹음 중");
-                    }
+        audioRecordImageBtn.setOnClickListener(view -> {
+            if (isRecording) {
+                stopRecording();
+                isRecording = false;
+                audioRecordImageBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.start_recording));
+                audioRecordText.setText("녹음 시작");
+                convertSpeechToText(audioFileName); // 녹음이 끝난 후 음성을 텍스트로 변환합니다.
+            } else {
+                if (checkAudioPermission()) {
+                    startRecording();
+                    isRecording = true;
+                    audioRecordImageBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.recording_red));
+                    audioRecordText.setText("녹음 중");
                 }
             }
         });
@@ -255,16 +257,19 @@ public class RecordActivity extends AppCompatActivity {
         int emotionScore = 75; // GPT API 응답 예시 값
         Log.d("RecordActivity", "감정 점수: " + emotionScore);
 
-        // 감정 점수를 SharedPreferences에 저장
-        SharedPreferences sharedPreferences = getSharedPreferences("EmoGraphPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("emotionScore", emotionScore);
-        editor.apply();
+        // 감정 점수를 저장하는 메서드를 호출하여 SharedPreferences에 저장
+        saveEmotionScore(emotionScore);
     }
 
-    private void updateEmotionGraph(int score) {
-        // 감정 점수를 이용하여 EmoGraph를 업데이트하는 로직 추가 예정
-        // 안드로이드 스튜디오에서 그래프를 그리고 사용자에게 시각화된 정보를 제공
-        Log.d("RecordActivity", "EmoGraph 업데이트: 감정 점수 " + score);
+    private void saveEmotionScore(int score) {
+        // SharedPreferences에 감정 점수를 저장하는 메서드
+        if (sharedPreferences != null) {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("emotionScore", score);
+            editor.apply();
+            Log.d("RecordActivity", "감정 점수가 저장되었습니다: " + score);
+        } else {
+            Log.e("RecordActivity", "SharedPreferences가 초기화되지 않았습니다.");
+        }
     }
 }

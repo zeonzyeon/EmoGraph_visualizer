@@ -2,6 +2,7 @@ package com.example.EmoGraph;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EmoGraphActivity extends AppCompatActivity {
-
     private SharedPreferences sharedPreferences;
     private List<String> emotionData = new ArrayList<>();
     private List<String> recordingData = new ArrayList<>();
@@ -48,5 +48,11 @@ public class EmoGraphActivity extends AppCompatActivity {
 
         // 그래프 그리기
         graphView.setData(emotionData, recordingData);  // 그래프 뷰에 데이터 전달
+    }
+
+    private void updateEmotionGraph(int score) {
+        // 감정 점수를 이용하여 EmoGraph를 업데이트하는 로직 추가 예정
+        // 안드로이드 스튜디오에서 그래프를 그리고 사용자에게 시각화된 정보를 제공
+        Log.d("RecordActivity", "EmoGraph 업데이트: 감정 점수 " + score);
     }
 }
