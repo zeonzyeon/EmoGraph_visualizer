@@ -1,6 +1,7 @@
 package com.example.EmoGraph;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -82,6 +83,7 @@ public class RecordActivity extends AppCompatActivity {
                     isRecording = false;
                     audioRecordImageBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.start_recording)); // 녹음 시작 이미지
                     audioRecordText.setText("녹음 시작");
+                    convertSpeechToText(audioFileName); // 녹음이 끝난 후 음성을 텍스트로 변환
                 } else {
                     // 녹음 중이 아닐 때 녹음 시작 처리
                     if (checkAudioPermission()) { // 권한이 있는지 확인
@@ -203,5 +205,66 @@ public class RecordActivity extends AppCompatActivity {
         }
 
         return file.getAbsolutePath();
+    }
+
+    private void convertSpeechToText(String audioFilePath) {
+        new Thread(() -> {
+            try (SpeechClient speechClient = SpeechClient.create()) {
+                FileInputStream fileInputStream = new FileInputStream(audioFilePath);
+                ByteString audioBytes = ByteString.readFrom(fileInputStream);
+
+                RecognitionAudio audio = RecognitionAudio.newBuilder()
+                        .setContent(audioBytes)
+                        .build();
+
+                RecognitionConfig config = RecognitionConfig.newBuilder()
+                        .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
+                        .setSampleRateHertz(16000)
+                        .setLanguageCode("ko-KR")
+                        .build();
+
+                RecognizeResponse response = speechClient.recognize(config, audio);
+                List<SpeechRecognitionResult> results = response.getResultsList();
+
+                StringBuilder transcript = new StringBuilder();
+                for (SpeechRecognitionResult result : results) {
+                    SpeechRecognitionAlternative alternative = result.getAlternativesList().get(0);
+                    transcript.append(alternative.getTranscript()).append(" ");
+                }
+
+                String finalTranscript = transcript.toString();
+                Log.d("RecordActivity", "인식된 텍스트: " + finalTranscript);
+                runOnUiThread(() -> {
+                    audioRecordText.setText(finalTranscript); // 음성을 텍스트로 변환한 결과를 화면에 표시
+                    requestEmotionScore(finalTranscript); // 변환된 텍스트를 이용해 감정 점수를 요청
+                });
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e("RecordActivity", "음성 인식 중 오류 발생: " + e.getMessage());
+            }
+        }).start();
+    }
+
+    private void requestEmotionScore(String transcript) {
+        // GPT API를 통해 감정 점수 요청하는 로직 추가 예정
+        // transcript와 '감정상태 기록'에서 사용자가 입력한 데이터를 이용하여 GPT-3.5 Turbo 모델에게 감정 점수를 요청
+        // 점수를 받은 후 해당 값을 이용해 EmoGraph를 그리는데 사용할 예정
+
+        // 예시: GPT에게 요청 후 받은 감정 점수 출력
+        int emotionScore = 75; // GPT API 응답 예시 값
+        Log.d("RecordActivity", "감정 점수: " + emotionScore);
+
+        // 감정 점수를 SharedPreferences에 저장
+        SharedPreferences sharedPreferences = getSharedPreferences("EmoGraphPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("emotionScore", emotionScore);
+        editor.apply();
+    }
+
+    private void updateEmotionGraph(int score) {
+        // 감정 점수를 이용하여 EmoGraph를 업데이트하는 로직 추가 예정
+        // 안드로이드 스튜디오에서 그래프를 그리고 사용자에게 시각화된 정보를 제공
+        Log.d("RecordActivity", "EmoGraph 업데이트: 감정 점수 " + score);
     }
 }
