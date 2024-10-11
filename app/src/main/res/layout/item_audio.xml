@@ -3,25 +3,40 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
     android:layout_marginBottom="10dp"
+    android:padding="8dp"
     android:gravity="center_vertical">
 
+    <!-- 오디오 재생 버튼 -->
     <ImageButton
         android:id="@+id/playBtn_itemAudio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:adjustViewBounds="true"
         android:background="@android:color/transparent"
-        android:padding="16dp"
+        android:padding="8dp"
         android:scaleType="fitCenter"
         android:src="@drawable/audio_play" />
 
+    <!-- 오디오 파일 제목 -->
     <TextView
         android:id="@+id/audioTitle_itemAudio"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:layout_marginStart="16dp" />
+
+    <!-- 인식된 텍스트 표시 -->
+    <TextView
+        android:id="@+id/audioTranscript_itemAudio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@android:color/white"
-        android:textSize="20sp" />
-
+        android:textSize="16sp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
 </LinearLayout>

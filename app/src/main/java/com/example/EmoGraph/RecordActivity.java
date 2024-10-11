@@ -12,45 +12,45 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import com.google.cloud.speech.v1.RecognitionAudio;
-import com.google.cloud.speech.v1.RecognitionConfig;
-import com.google.cloud.speech.v1.RecognizeResponse;
-import com.google.cloud.speech.v1.SpeechClient;
-import com.google.cloud.speech.v1.SpeechRecognitionAlternative;
-import com.google.cloud.speech.v1.SpeechRecognitionResult;
-import com.google.protobuf.ByteString;
-import okhttp3.*;
-import org.json.JSONObject;
-
-import java.io.FileInputStream;
-import java.util.List;
 
 public class RecordActivity extends AppCompatActivity {
     ImageButton audioRecordImageBtn;
     TextView audioRecordText;
 
     // 오디오 권한
-    private String recordPermission = Manifest.permission.RECORD_AUDIO;
-    private int PERMISSION_CODE = 21;
+    private final String recordPermission = Manifest.permission.RECORD_AUDIO;
+    private final int PERMISSION_CODE = 21;
 
     // 오디오 파일 녹음 관련 변수
     private MediaRecorder mediaRecorder;
     private String audioFileName;
-    private boolean isRecording = false; // 현재 녹음 상태를 확인하기 위함
+    private boolean isRecording = false;
     private Uri audioUri = null; // 오디오 파일 uri
 
     // 오디오 파일 목록 관련 변수
     private ArrayList<Uri> audioList;
+    private ArrayList<String> transcriptList; // 인식된 텍스트를 저장할 리스트
     private AudioAdapter audioAdapter;
 
     // 오디오 파일 재생 관련 변수
@@ -64,17 +64,24 @@ public class RecordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record);  // 녹음 화면 레이아웃 설정
 
-        audioRecordImageBtn = findViewById(R.id.audioRecordImageBtn);
-        audioRecordText = findViewById(R.id.audioRecordText);
-
-        RecyclerView audioRecyclerView = findViewById(R.id.audioRecyclerview);
+        // 리스트 초기화
         audioList = new ArrayList<>();
-        audioAdapter = new AudioAdapter(this, audioList);
+        transcriptList = new ArrayList<>();
+
+        // 어댑터 초기화 (리스트 초기화 후 설정)
+        audioAdapter = new AudioAdapter(this, audioList, transcriptList);
+
+        // 리사이클러뷰 초기화
+        RecyclerView audioRecyclerView = findViewById(R.id.audioRecyclerview);
         audioRecyclerView.setAdapter(audioAdapter);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         audioRecyclerView.setLayoutManager(layoutManager);
+
+        // 뷰 초기화
+        audioRecordImageBtn = findViewById(R.id.audioRecordImageBtn);
+        audioRecordText = findViewById(R.id.audioRecordText);
 
         // SharedPreferences 초기화
         sharedPreferences = getSharedPreferences("EmoGraphPrefs", MODE_PRIVATE);
@@ -89,7 +96,12 @@ public class RecordActivity extends AppCompatActivity {
                 isRecording = false;
                 audioRecordImageBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.start_recording));
                 audioRecordText.setText("녹음 시작");
-                convertSpeechToText(audioFileName); // 녹음이 끝난 후 음성을 텍스트로 변환
+
+                // 현재 녹음 파일의 위치
+                int position = audioList.size() - 1;
+
+                // 음성을 텍스트로 변환 (파일의 위치 정보도 전달)
+                convertSpeechToText(audioFileName, position);
             } else {
                 if (checkAudioPermission()) {
                     startRecording();
@@ -101,20 +113,17 @@ public class RecordActivity extends AppCompatActivity {
         });
 
         // RecyclerView의 각 아이템에 대한 클릭 리스너 설정
-        audioAdapter.setOnItemClickListener(new AudioAdapter.OnIconClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                Uri uri = audioList.get(position);
-                ImageButton playBtn = view.findViewById(R.id.playBtn_itemAudio);
-                if (isPlaying) {
-                    stopPlaying();
-                    isPlaying = false;
-                    playBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.audio_play)); // 녹음 시작 이미지로 변경
-                } else {
-                    startPlaying(uri, playBtn);
-                    isPlaying = true;
-                    playBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.audio_pause)); // 재생 중 이미지로 변경
-                }
+        audioAdapter.setOnItemClickListener((view, position) -> {
+            Uri uri = audioList.get(position);
+            ImageButton playBtn = view.findViewById(R.id.playBtn_itemAudio);
+            if (isPlaying) {
+                stopPlaying();
+                isPlaying = false;
+                playBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.audio_play)); // 녹음 시작 이미지로 변경
+            } else {
+                startPlaying(uri, playBtn);
+                isPlaying = true;
+                playBtn.setImageDrawable(ContextCompat.getDrawable(view.getContext(), R.drawable.audio_pause)); // 재생 중 이미지로 변경
             }
         });
     }
@@ -136,35 +145,24 @@ public class RecordActivity extends AppCompatActivity {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(new Date());
 
         // 파일 이름 생성 및 확장자 설정 (.3gp)
-        audioFileName = generateUniqueFileName(recordPath, timeStamp + "_오늘의 기분", ".3gp");
+        audioFileName = generateUniqueFileName(recordPath, timeStamp + "_emotion", ".3gp");
 
         mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);  // 마이크로부터 오디오 입력받음
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);  // 3GP 형식 설정
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);  // AMR_NB 인코더 설정
-        mediaRecorder.setOutputFile(audioFileName);  // 녹음 파일 저장 경로
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        mediaRecorder.setOutputFile(audioFileName);
 
         try {
-            // MediaRecorder 준비
             mediaRecorder.prepare();
-        } catch (IOException e) {
-            Log.e("RecordActivity", "녹음 준비 중 오류 발생: " + e.getMessage());
-            mediaRecorder.release();  // 오류 발생 시 리소스를 해제
-            mediaRecorder = null;
-            return;  // 오류 발생 시 녹음 시작을 하지 않음
-        }
-
-        // 녹음 시작
-        try {
             mediaRecorder.start();
             Log.d("RecordActivity", "녹음 시작됨: " + audioFileName);
-        } catch (IllegalStateException e) {
+        } catch (IOException | IllegalStateException e) {
             Log.e("RecordActivity", "녹음 시작 중 오류 발생: " + e.getMessage());
-            mediaRecorder.release();  // 오류 발생 시 리소스를 해제
+            mediaRecorder.release();
             mediaRecorder = null;
         }
     }
-
 
     // 녹음 종료
     private void stopRecording() {
@@ -179,6 +177,7 @@ public class RecordActivity extends AppCompatActivity {
         // 녹음된 파일을 Uri로 변환하여 리스트에 추가
         audioUri = Uri.fromFile(new File(audioFileName));
         audioList.add(audioUri);
+        transcriptList.add(""); // 빈 문자열을 추가하여 transcriptList와 audioList의 크기를 맞춤
         audioAdapter.notifyDataSetChanged();
         Log.d("RecordActivity", "녹음된 파일 리스트 갱신: " + audioFileName);
     }
@@ -188,17 +187,15 @@ public class RecordActivity extends AppCompatActivity {
         mediaPlayer = new MediaPlayer();
         try {
             mediaPlayer.setDataSource(this, uri);
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-            Log.d("RecordActivity", "오디오 재생 시작: " + uri.getPath());
+            mediaPlayer.setOnPreparedListener(mp -> mediaPlayer.start());
+            mediaPlayer.prepareAsync(); // 비동기 준비를 통해 준비가 완료되면 재생 시작
 
             mediaPlayer.setOnCompletionListener(mp -> {
                 stopPlaying();
                 isPlaying = false;
-                playBtn.setImageDrawable(ContextCompat.getDrawable(playBtn.getContext(), R.drawable.audio_play)); // 재생 완료 후 이미지 변경
+                playBtn.setImageDrawable(ContextCompat.getDrawable(playBtn.getContext(), R.drawable.audio_play));
             });
         } catch (IOException e) {
-            e.printStackTrace();
             Log.e("RecordActivity", "오디오 재생 중 오류 발생: " + e.getMessage());
         }
     }
@@ -225,7 +222,8 @@ public class RecordActivity extends AppCompatActivity {
         return file.getAbsolutePath();
     }
 
-    private void convertSpeechToText(String audioFilePath) {
+    // 음성 텍스트 변환
+    private void convertSpeechToText(String audioFilePath, int position) {
         new Thread(() -> {
             try {
                 // 오디오 파일을 바이트 배열로 읽기
@@ -242,10 +240,9 @@ public class RecordActivity extends AppCompatActivity {
                 JSONObject audioContent = new JSONObject();
                 audioContent.put("content", Base64.encodeToString(audioBytes, Base64.NO_WRAP));
 
-                // 오디오 형식과 맞춘 설정
                 JSONObject config = new JSONObject();
-                config.put("encoding", "AMR"); // 녹음된 파일이 AMR_NB 형식이므로 "AMR"로 수정
-                config.put("sampleRateHertz", 8000); // AMR_NB는 일반적으로 8000 Hz를 사용합니다
+                config.put("encoding", "AMR");
+                config.put("sampleRateHertz", 8000);
                 config.put("languageCode", "ko-KR");
 
                 JSONObject requestBodyJson = new JSONObject();
@@ -279,9 +276,12 @@ public class RecordActivity extends AppCompatActivity {
                         }
 
                         String finalTranscript = transcript.toString();
+
+                        // UI 업데이트
                         runOnUiThread(() -> {
-                            audioRecordText.setText(finalTranscript);
-                            requestEmotionScore(finalTranscript);
+                            // RecyclerView 어댑터에 인식된 텍스트를 추가하고 갱신
+                            audioAdapter.setTranscriptText(position, finalTranscript);
+                            Log.d("RecordActivity", "인식된 텍스트가 업데이트되었습니다: " + finalTranscript);
                         });
                     } else {
                         Log.e("RecordActivity", "응답에 results 필드가 없습니다: " + responseString);
@@ -290,7 +290,6 @@ public class RecordActivity extends AppCompatActivity {
                     Log.e("RecordActivity", "응답 실패: " + response.message());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 Log.e("RecordActivity", "오류 발생: " + e.getMessage());
             }
         }).start();
@@ -316,5 +315,4 @@ public class RecordActivity extends AppCompatActivity {
         editor.apply();
         Log.d("RecordActivity", "감정 점수가 저장되었습니다: " + score);
     }
-
 }

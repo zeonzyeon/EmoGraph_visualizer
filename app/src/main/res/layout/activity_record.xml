@@ -20,12 +20,12 @@
     <!-- 인식된 텍스트를 표시할 텍스트뷰 -->
     <TextView
         android:id="@+id/audioTranscriptText"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:textColor="@android:color/black"
+        android:textColor="@android:color/white"
         android:textSize="16sp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintTop_toBottomOf="@id/audioRecyclerview"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
