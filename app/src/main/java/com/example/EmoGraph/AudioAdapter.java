@@ -73,11 +73,13 @@ public class AudioAdapter extends RecyclerView.Adapter<AudioAdapter.MyViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        String uriName = String.valueOf(dataModels.get(position));
-        File file = new File(uriName);
+        Uri audioUri = dataModels.get(position);
+        File file = new File(audioUri.getPath()); // 경로에서 파일 객체 생성
 
         // 오디오 파일 제목 설정
-        holder.audioTitle.setText(file.getName());
+        String fileName = file.getName();
+        holder.audioTitle.setText(fileName);
+        Log.d("AudioAdapter", "오디오 파일 제목 설정: " + fileName + " at position: " + position);
 
         // 인식된 텍스트가 있는 경우 설정
         String transcript = transcriptList.get(position);

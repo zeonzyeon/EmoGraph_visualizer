@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">EmoGraph : 감정의 파동을 그리다</string>
+    <string name="app_name">EmoGraph</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
