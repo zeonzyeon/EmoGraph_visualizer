@@ -277,11 +277,23 @@ public class RecordActivity extends AppCompatActivity {
 
                         String finalTranscript = transcript.toString();
 
-                        // UI 업데이트
+                        // 음성 텍스트 변환 후 UI 업데이트 부분
                         runOnUiThread(() -> {
                             // RecyclerView 어댑터에 인식된 텍스트를 추가하고 갱신
                             audioAdapter.setTranscriptText(position, finalTranscript);
                             Log.d("RecordActivity", "인식된 텍스트가 업데이트되었습니다: " + finalTranscript);
+
+                            // 감정 점수 계산을 위한 GPT 호출
+                            String emotionRecord = sharedPreferences.getString("emotionState", ""); // '감정상태 기록'에서 기록한 감정 데이터 가져오기
+                            EmotionScoreTask task = new EmotionScoreTask(score -> {
+                                if (score != -1) {
+                                    Log.d("RecordActivity", "오늘의 감정 점수: " + score);
+                                    saveEmotionScore(score);
+                                } else {
+                                    Log.e("RecordActivity", "감정 점수 계산 실패");
+                                }
+                            }, sharedPreferences);
+                            task.execute(finalTranscript, emotionRecord);
                         });
                     } else {
                         Log.e("RecordActivity", "응답에 results 필드가 없습니다: " + responseString);

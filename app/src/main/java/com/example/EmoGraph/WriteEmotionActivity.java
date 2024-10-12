@@ -50,6 +50,7 @@ public class WriteEmotionActivity extends AppCompatActivity {
                     // 기록을 SharedPreferences에 저장
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("records", allRecords);  // 모든 기록 저장
+                    editor.putString("latestEmotionRecord", emotion); // 가장 최신 감정 상태를 별도로 저장
                     editor.apply();
 
                     // 화면에 모든 기록 표시
@@ -60,6 +61,7 @@ public class WriteEmotionActivity extends AppCompatActivity {
                 }
             }
         });
+
     }
 
     // 현재 날짜 및 시간을 반환하는 함수

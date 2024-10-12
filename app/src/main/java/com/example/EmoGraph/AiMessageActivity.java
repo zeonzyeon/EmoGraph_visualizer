@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class AiMessageActivity extends AppCompatActivity {
-
     private TextView aiMessageTextView;
     private Button fetchMessageButton;
 

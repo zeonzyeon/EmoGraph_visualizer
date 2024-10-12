@@ -9,7 +9,6 @@ import android.view.View;
 import java.util.List;
 
 public class CustomGraphView extends View {
-
     private List<String> emotionData;
     private List<String> recordingData;
     private Paint paint;
