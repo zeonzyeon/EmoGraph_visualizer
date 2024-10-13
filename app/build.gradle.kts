@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+    implementation(libs.cronet.embedded)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -66,6 +67,9 @@ dependencies {
     // Retrofit and Gson converter 라이브러리 추가
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.google.cloud:google-cloud-speech:2.0.1")
+    implementation("com.google.cloud:google-cloud-speech:2.0.1") {
+        exclude(group = "com.google.protobuf", module = "protobuf-java")
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
+    }
     implementation ("com.squareup.okhttp3:okhttp:4.9.0")
 }

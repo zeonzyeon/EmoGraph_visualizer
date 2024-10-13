@@ -285,12 +285,21 @@ public class RecordActivity extends AppCompatActivity {
 
                             // 감정 점수 계산을 위한 GPT 호출
                             String emotionRecord = sharedPreferences.getString("emotionState", ""); // '감정상태 기록'에서 기록한 감정 데이터 가져오기
-                            EmotionScoreTask task = new EmotionScoreTask(score -> {
-                                if (score != -1) {
-                                    Log.d("RecordActivity", "오늘의 감정 점수: " + score);
-                                    saveEmotionScore(score);
-                                } else {
-                                    Log.e("RecordActivity", "감정 점수 계산 실패");
+                            // 익명 클래스를 사용하여 EmotionScoreTask 생성
+                            EmotionScoreTask task = new EmotionScoreTask(new EmotionScoreTask.Callback() {
+                                @Override
+                                public void onEmotionScoreReceived(int score) {
+                                    if (score != -1) {
+                                        Log.d("RecordActivity", "오늘의 감정 점수: " + score);
+                                        saveEmotionScore(score);
+                                    } else {
+                                        Log.e("RecordActivity", "감정 점수 계산 실패");
+                                    }
+                                }
+
+                                @Override
+                                public void onEmotionScoreError() {
+                                    Log.e("RecordActivity", "감정 점수 계산 중 오류 발생");
                                 }
                             }, sharedPreferences);
                             task.execute(finalTranscript, emotionRecord);
@@ -307,24 +316,19 @@ public class RecordActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void requestEmotionScore(String transcript) {
-        // GPT API를 통해 감정 점수 요청하는 로직 추가 예정
-        // transcript와 '감정상태 기록'에서 사용자가 입력한 데이터를 이용하여 GPT-3.5 Turbo 모델에게 감정 점수를 요청
-        // 점수를 받은 후 해당 값을 이용해 EmoGraph를 그리는데 사용할 예정
-
-        // 예시: GPT에게 요청 후 받은 감정 점수 출력
-        int emotionScore = 75; // GPT API 응답 예시 값
-        Log.d("RecordActivity", "감정 점수: " + emotionScore);
-
-        // 감정 점수를 저장하는 메서드를 호출하여 SharedPreferences에 저장
-        saveEmotionScore(emotionScore);
-    }
-
-    private void saveEmotionScore(int score) {
-        // SharedPreferences에 감정 점수를 저장하는 메서드
+    // 감정 점수를 저장하는 메서드
+    private void saveEmotionScore(int newScore) {
+        SharedPreferences sharedPreferences = getSharedPreferences("your_shared_preferences_name", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("emotionScore", score);
+
+        // 기존 감정 점수 리스트 크기 불러오기
+        int size = sharedPreferences.getInt("emotionScores_size", 0);
+
+        // 새로운 점수를 배열에 추가하여 저장
+        editor.putInt("emotionScore_" + size, newScore);  // 새로운 점수 저장
+        editor.putInt("emotionScores_size", size + 1);  // 배열 크기 업데이트
         editor.apply();
-        Log.d("RecordActivity", "감정 점수가 저장되었습니다: " + score);
+
+        Log.d("RecordActivity", "감정 점수가 저장되었습니다: " + newScore);
     }
 }
