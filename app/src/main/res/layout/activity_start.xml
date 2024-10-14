@@ -7,52 +7,51 @@
     android:background="@drawable/gradient_background"
     tools:context=".MainActivity">
 
+    <!-- EmoGraph 텍스트를 이미지 위에 배치 -->
     <ImageView
         android:id="@+id/centerImageView"
         android:layout_width="600dp"
         android:layout_height="600dp"
-        android:layout_marginTop="90dp"
+        android:layout_marginTop="64dp"
         android:contentDescription="Center Image"
         android:src="@drawable/emograph_logo"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- TextView를 이미지 위에 배치 -->
 
     <TextView
         android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="140dp"
+        android:layout_marginBottom="130dp"
         android:text="EmoGraph"
         android:textColor="#FFFFFF"
-        android:textSize="36sp"
+        android:textSize="40sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/centerImageView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- 버튼을 이미지 위에 배치 -->
     <Button
         android:id="@+id/btn_start"
-        android:layout_width="200dp"
-        android:layout_height="80dp"
+        android:layout_width="190dp"
+        android:layout_height="70dp"
         android:backgroundTint="#EDC6FF"
-        android:layout_marginBottom="500dp"
         android:text="감정 속으로"
         android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@id/centerImageView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/centerImageView" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/resultTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
+        android:layout_marginTop="70dp"
         android:padding="16dp"
         android:text="Neukkimpo Factory"
         android:textAlignment="center"
