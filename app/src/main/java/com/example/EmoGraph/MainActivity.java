@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         // 녹음 화면으로 이동하는 버튼 찾기
         Button btnRecord = findViewById(R.id.btn_record);
         btnRecord.setOnClickListener(new View.OnClickListener() {

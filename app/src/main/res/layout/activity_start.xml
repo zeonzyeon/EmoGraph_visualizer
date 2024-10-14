@@ -4,54 +4,52 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#846E9F"
     tools:context=".MainActivity">
 
-    <!-- TextView for Hello World -->
-    <TextView
-        android:id="@+id/helloWorldText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/myButton"
-        app:layout_constraintVertical_bias="0.4" />
+    <!-- Image in the center -->
 
-    <!-- Button for sending GPT question -->
-    <Button
-        android:id="@+id/myButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Click Me"
-        app:layout_constraintTop_toBottomOf="@id/helloWorldText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp" />
+    <!-- Button to start App -->
 
-    <!-- Button to start SecondaryActivity -->
+    <ImageView
+        android:id="@+id/centerImageView"
+        android:layout_width="500dp"
+        android:layout_height="500dp"
+        android:layout_marginTop="70dp"
+        android:contentDescription="Center Image"
+        android:src="@drawable/start_emograph"
+        app:layout_constraintBottom_toTopOf="@id/btn_start"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.505"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <Button
         android:id="@+id/btn_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start App"
-        app:layout_constraintTop_toBottomOf="@id/myButton"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#181D2F"
+        android:text="감정 속으로"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp" />
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/centerImageView" />
 
-    <!-- TextView for GPT Response -->
     <TextView
         android:id="@+id/resultTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Result will appear here"
-        app:layout_constraintTop_toBottomOf="@id/btn_start"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp"
-        android:textSize="18sp"
+        android:layout_marginTop="36dp"
         android:padding="16dp"
-        android:textAlignment="center"/>
+        android:text="Neukkimpo Factory"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="17sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_start" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

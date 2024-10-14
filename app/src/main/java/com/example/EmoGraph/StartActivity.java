@@ -13,6 +13,7 @@ public class StartActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();  // 액션 바 숨기기
         setContentView(R.layout.activity_start);
 
         // WindowInsets 처리 코드
