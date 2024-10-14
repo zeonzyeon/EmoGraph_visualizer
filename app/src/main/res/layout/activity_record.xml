@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/backgroundColor"
+    android:background="@drawable/gradient_background2"
     tools:context=".MainActivity">
 
     <!-- 녹음 내역들이 담길 리사이클러뷰 -->

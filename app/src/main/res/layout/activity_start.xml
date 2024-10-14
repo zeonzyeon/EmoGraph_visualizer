@@ -4,36 +4,47 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#846E9F"
+    android:background="@drawable/gradient_background"
     tools:context=".MainActivity">
-
-    <!-- Image in the center -->
-
-    <!-- Button to start App -->
 
     <ImageView
         android:id="@+id/centerImageView"
-        android:layout_width="500dp"
-        android:layout_height="500dp"
-        android:layout_marginTop="70dp"
+        android:layout_width="600dp"
+        android:layout_height="600dp"
+        android:layout_marginTop="90dp"
         android:contentDescription="Center Image"
-        android:src="@drawable/start_emograph"
-        app:layout_constraintBottom_toTopOf="@id/btn_start"
+        android:src="@drawable/emograph_logo"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.505"
+        app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- TextView를 이미지 위에 배치 -->
+
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="140dp"
+        android:text="EmoGraph"
+        android:textColor="#FFFFFF"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/centerImageView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <Button
         android:id="@+id/btn_start"
-        android:layout_width="150dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="#181D2F"
+        android:layout_width="200dp"
+        android:layout_height="80dp"
+        android:backgroundTint="#EDC6FF"
+        android:layout_marginBottom="500dp"
         android:text="감정 속으로"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/centerImageView" />
 
@@ -41,7 +52,7 @@
         android:id="@+id/resultTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="0dp"
         android:padding="16dp"
         android:text="Neukkimpo Factory"
         android:textAlignment="center"

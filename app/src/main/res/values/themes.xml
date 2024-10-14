@@ -1,8 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Theme.PracticeApp1" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="android:actionBarSize">@dimen/custom_action_bar_height</item>
+        <item name="actionBarSize">@dimen/custom_action_bar_height</item>
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/blue_700</item>
+        <item name="colorPrimary">#181D2F</item>
         <item name="colorPrimaryVariant">@color/black</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
