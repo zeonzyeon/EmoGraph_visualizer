@@ -7,49 +7,14 @@
     android:background="@drawable/gradient_background2"
     tools:context=".EmoGraphActivity">
 
-    <!-- 스크롤 가능한 감정 및 녹음 데이터 -->
-    <ScrollView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/customGraphView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <!-- ScrollView 안에 LinearLayout 사용 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- 감정 기록 텍스트 확인 -->
-            <TextView
-                android:id="@+id/emotionDataText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Emotion Data" />
-
-            <!-- 녹음 데이터 텍스트 확인 -->
-            <TextView
-                android:id="@+id/recordingDataText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Recording Data" />
-        </LinearLayout>
-    </ScrollView>
-
     <!-- 감정 그래프를 그릴 커스텀 뷰 -->
     <com.example.EmoGraph.CustomGraphView
         android:id="@+id/customGraphView"
         android:layout_width="0dp"
-        android:layout_height="400dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/generateGraphButton"
+        android:layout_height="350dp"
+        android:layout_marginTop="200dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scrollView"
-        tools:ignore="UnknownId" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
