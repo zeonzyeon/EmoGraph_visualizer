@@ -10,10 +10,16 @@
 
 <br>
 
-## 기술 스택
+## 개발 기간
+2024년 9월 23일 - 2024년 10월 17일 
 
-- **프로그래밍 언어**: Java
+<br>
+
+## 개발 환경 및 기술 스택
+
 - **IDE**: Android Studio
+- **Programming Language**: Java
+- **Version Control**: Git
 - **API**: OpenAI GPT API, Google Speech-to-Text API
 
 <br>
@@ -40,6 +46,9 @@
 <br>
 
 ## 앱 구조
+
+### StartActivity
+앱의 인트로 화면입니다.
 
 ### MainActivity
 - 네 가지 주요 기능을 선택할 수 있는 메인 화면입니다.
